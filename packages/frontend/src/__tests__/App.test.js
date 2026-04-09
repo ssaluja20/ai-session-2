@@ -5,36 +5,50 @@ import { rest } from 'msw';
 import { setupServer } from 'msw/node';
 import App from '../App';
 
+const todayTasks = [
+  {
+    id: 1,
+    title: 'Morning standup',
+    description: 'Team sync meeting',
+    date: '2026-04-09',
+    time: '09:00',
+    status: 'pending',
+    created_at: '2026-04-09T08:00:00Z',
+    updated_at: '2026-04-09T08:00:00Z',
+  },
+  {
+    id: 2,
+    title: 'Code review',
+    description: 'Review PRs',
+    date: '2026-04-09',
+    time: '14:00',
+    status: 'pending',
+    created_at: '2026-04-09T08:00:00Z',
+    updated_at: '2026-04-09T08:00:00Z',
+  },
+];
+
 // Mock server to intercept API requests
 const server = setupServer(
-  // GET /api/items handler
-  rest.get('/api/items', (req, res, ctx) => {
-    return res(
-      ctx.status(200),
-      ctx.json([
-        { id: 1, name: 'Test Item 1', created_at: '2023-01-01T00:00:00.000Z' },
-        { id: 2, name: 'Test Item 2', created_at: '2023-01-02T00:00:00.000Z' },
-      ])
-    );
+  // GET /api/tasks?date=... handler
+  rest.get('http://localhost:3030/api/tasks', (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(todayTasks));
   }),
-  
-  // POST /api/items handler
-  rest.post('/api/items', (req, res, ctx) => {
-    const { name } = req.body;
-    
-    if (!name || name.trim() === '') {
-      return res(
-        ctx.status(400),
-        ctx.json({ error: 'Item name is required' })
-      );
-    }
-    
+
+  // POST /api/tasks handler
+  rest.post('http://localhost:3030/api/tasks', async (req, res, ctx) => {
+    const body = await req.json();
     return res(
       ctx.status(201),
       ctx.json({
         id: 3,
-        name,
+        title: body.title,
+        description: body.description || '',
+        date: body.date,
+        time: body.time,
+        status: 'pending',
         created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       })
     );
   })
@@ -50,87 +64,95 @@ describe('App Component', () => {
     await act(async () => {
       render(<App />);
     });
-    expect(screen.getByText('React Frontend with Node Backend')).toBeInTheDocument();
-    expect(screen.getByText('Connected to in-memory database')).toBeInTheDocument();
+    expect(screen.getByText('📋 Daily Tasks')).toBeInTheDocument();
+    expect(screen.getByText('Organize your day, one task at a time')).toBeInTheDocument();
   });
 
-  test('loads and displays items', async () => {
+  test('loads and displays tasks', async () => {
     await act(async () => {
       render(<App />);
     });
-    
+
     // Initially shows loading state
-    expect(screen.getByText('Loading data...')).toBeInTheDocument();
-    
-    // Wait for items to load
+    expect(screen.getByText('Loading tasks...')).toBeInTheDocument();
+
+    // Wait for tasks to load
     await waitFor(() => {
-      expect(screen.getByText('Test Item 1')).toBeInTheDocument();
-      expect(screen.getByText('Test Item 2')).toBeInTheDocument();
+      expect(screen.getByText('Morning standup')).toBeInTheDocument();
+      expect(screen.getByText('Code review')).toBeInTheDocument();
     });
   });
 
-  test('adds a new item', async () => {
+  test('adds a new task', async () => {
     const user = userEvent.setup();
-    
+
     await act(async () => {
       render(<App />);
     });
-    
-    // Wait for items to load
+
+    // Wait for loading to finish
     await waitFor(() => {
-      expect(screen.queryByText('Loading data...')).not.toBeInTheDocument();
+      expect(screen.queryByText('Loading tasks...')).not.toBeInTheDocument();
     });
-    
-    // Fill in the form and submit
-    const input = screen.getByPlaceholderText('Enter item name');
+
+    // Open the add task form via FAB
     await act(async () => {
-      await user.type(input, 'New Test Item');
+      await user.click(screen.getByRole('button', { name: /add new task/i }));
     });
-    
-    const submitButton = screen.getByText('Add Item');
-    await act(async () => {
-      await user.click(submitButton);
-    });
-    
-    // Check that the new item appears
+
     await waitFor(() => {
-      expect(screen.getByText('New Test Item')).toBeInTheDocument();
+      expect(screen.getByPlaceholderText('Enter task title...')).toBeInTheDocument();
+    });
+
+    // Fill in the title
+    await act(async () => {
+      await user.type(screen.getByPlaceholderText('Enter task title...'), 'Buy groceries');
+    });
+
+    // Submit the form
+    await act(async () => {
+      await user.click(screen.getByRole('button', { name: /add task/i }));
+    });
+
+    // Verify the new task appears
+    await waitFor(() => {
+      expect(screen.getByText('Buy groceries')).toBeInTheDocument();
     });
   });
 
   test('handles API error', async () => {
     // Override the default handler to simulate an error
     server.use(
-      rest.get('/api/items', (req, res, ctx) => {
-        return res(ctx.status(500));
+      rest.get('http://localhost:3030/api/tasks', (req, res, ctx) => {
+        return res(ctx.status(500), ctx.json({ error: 'Internal server error' }));
       })
     );
-    
+
     await act(async () => {
       render(<App />);
     });
-    
-    // Wait for error message
+
+    // Wait for error state
     await waitFor(() => {
-      expect(screen.getByText(/Failed to fetch data/)).toBeInTheDocument();
+      expect(screen.getByText('Failed to Load Tasks')).toBeInTheDocument();
     });
   });
 
-  test('shows empty state when no items', async () => {
-    // Override the default handler to return empty array
+  test('shows empty state when no tasks', async () => {
+    // Override to return empty array
     server.use(
-      rest.get('/api/items', (req, res, ctx) => {
+      rest.get('http://localhost:3030/api/tasks', (req, res, ctx) => {
         return res(ctx.status(200), ctx.json([]));
       })
     );
-    
+
     await act(async () => {
       render(<App />);
     });
-    
+
     // Wait for empty state message
     await waitFor(() => {
-      expect(screen.getByText('No items found. Add some!')).toBeInTheDocument();
+      expect(screen.getByText('No tasks for today')).toBeInTheDocument();
     });
   });
 });

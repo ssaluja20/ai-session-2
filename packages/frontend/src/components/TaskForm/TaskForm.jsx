@@ -84,7 +84,7 @@ export function TaskForm({
   };
 
   return (
-    <form className="task-form" onSubmit={handleSubmit}>
+    <form className="task-form" onSubmit={handleSubmit} noValidate>
       <h2 className="form-title">
         {isEditing ? 'Edit Task' : 'Add New Task'}
       </h2>

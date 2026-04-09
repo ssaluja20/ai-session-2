@@ -10,12 +10,15 @@ test.describe('Task Management E2E', () => {
   });
 
   test('should create a new task and display it in the list', async ({ page }) => {
+    // Use a unique title to avoid conflicts with leftover data from previous runs
+    const uniqueTitle = `E2E Task ${Date.now()}`;
+
     // Click FAB button to open form
     await page.click('.fab-btn');
     await page.waitForSelector('.task-form');
 
     // Fill form
-    await page.fill('input[name="title"]', 'Buy groceries');
+    await page.fill('input[name="title"]', uniqueTitle);
     await page.fill('textarea[name="description"]', 'Milk, eggs, bread');
     await page.fill('input[name="time"]', '14:30');
 
@@ -26,7 +29,7 @@ test.describe('Task Management E2E', () => {
     await page.waitForNavigation({ waitUntil: 'networkidle', timeout: 5000 }).catch(() => {});
 
     // Verify task appears in list
-    const taskTitle = await page.getByText('Buy groceries');
+    const taskTitle = await page.getByText(uniqueTitle);
     await expect(taskTitle).toBeVisible();
   });
 

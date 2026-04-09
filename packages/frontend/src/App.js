@@ -26,12 +26,12 @@ function AppContent() {
   // Load tasks when date changes
   useEffect(() => {
     taskOps.loadTasksForDate(context.currentDate);
-  }, [context.currentDate, taskOps]);
+  }, [context.currentDate, taskOps.loadTasksForDate]);
 
   // Update context when tasks change
   useEffect(() => {
     context.setTasks(taskOps.tasks);
-  }, [taskOps.tasks]);
+  }, [taskOps.tasks, context.setTasks]);
 
   // Handle task creation
   const handleCreateTask = async (formData) => {
