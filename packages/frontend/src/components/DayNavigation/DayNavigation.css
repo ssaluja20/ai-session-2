@@ -1,0 +1,93 @@
+/* DayNavigation Component */
+
+.day-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 32px;
+  padding: 16px;
+  background: linear-gradient(135deg, #1f51ba 0%, #0d9488 100%);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(31, 81, 186, 0.15);
+}
+
+.nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  background-color: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.nav-btn:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+.nav-btn:focus-visible {
+  outline: 3px solid #ffffff;
+  outline-offset: 2px;
+}
+
+.nav-arrow {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.nav-label {
+  display: none;
+}
+
+.nav-current {
+  flex: 1;
+  text-align: center;
+}
+
+.current-date {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive */
+@media (min-width: 640px) {
+  .nav-label {
+    display: inline;
+  }
+
+  .nav-btn {
+    padding: 12px 20px;
+    font-size: 14px;
+  }
+
+  .current-date {
+    font-size: 32px;
+  }
+}
+
+@media (max-width: 600px) {
+  .day-navigation {
+    padding: 12px;
+    gap: 8px;
+  }
+
+  .nav-btn {
+    padding: 8px 12px;
+  }
+
+  .current-date {
+    font-size: 22px;
+  }
+}

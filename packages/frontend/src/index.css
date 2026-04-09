@@ -1,13 +1,106 @@
+/* Global Styles - Material Design */
+
+:root {
+  /* Colors - Material Design Palette */
+  --primary: #1f51ba;
+  --primary-light: #4f7eee;
+  --primary-dark: #1a3f8f;
+  --secondary: #0d9488;
+  --secondary-light: #34d399;
+  --secondary-dark: #0a7a6f;
+  --error: #dc2626;
+  --surface: #ffffff;
+  --surface-variant: #f9fafb;
+  --on-surface: #1f2937;
+  --on-surface-dim: #6b7280;
+  --border-light: #e5e7eb;
+  --border-dark: #d1d5db;
+
+  /* Typography */
+  --font-family-primary: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
+    'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
+    'Helvetica Neue', sans-serif;
+  --font-family-mono: 'Courier New', monospace;
+
+  /* Spacing */
+  --spacing-unit: 8px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+}
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: var(--font-family-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: var(--surface-variant);
+  color: var(--on-surface);
+  line-height: 1.5;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  font-family: var(--font-family-mono);
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--surface-variant);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-dark);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--on-surface-dim);
+}
+
+/* Focus Visible - Accessibility */
+:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Selection */
+::selection {
+  background-color: var(--primary);
+  color: #ffffff;
+}
+
+/* Accessibility - Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Accessibility - High Contrast */
+@media (prefers-contrast: more) {
+  :root {
+    --primary: #0d47a1;
+    --secondary: #00695c;
+    --border-light: #9e9e9e;
+  }
 }

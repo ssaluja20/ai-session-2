@@ -1,0 +1,125 @@
+/* Button Component - Material Design */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: inherit;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+  position: relative;
+  border-radius: 4px;
+}
+
+/* Size variants */
+.btn-small {
+  padding: 6px 16px;
+  font-size: 12px;
+  min-height: 32px;
+}
+
+.btn-medium {
+  padding: 8px 20px;
+  font-size: 14px;
+  min-height: 40px;
+}
+
+.btn-large {
+  padding: 12px 28px;
+  font-size: 16px;
+  min-height: 48px;
+}
+
+/* Color + Variant combinations */
+
+/* Primary - Filled */
+.btn-filled.btn-primary {
+  background-color: #1f51ba;
+  color: #ffffff;
+  box-shadow: 0 2px 4px rgba(31, 81, 186, 0.2);
+}
+
+.btn-filled.btn-primary:hover:not(:disabled) {
+  background-color: #1a3f8f;
+  box-shadow: 0 4px 8px rgba(31, 81, 186, 0.3);
+}
+
+.btn-filled.btn-primary:active:not(:disabled) {
+  box-shadow: 0 1px 2px rgba(31, 81, 186, 0.2);
+}
+
+/* Primary - Outlined */
+.btn-outlined.btn-primary {
+  background-color: transparent;
+  color: #1f51ba;
+  border: 2px solid #1f51ba;
+}
+
+.btn-outlined.btn-primary:hover:not(:disabled) {
+  background-color: rgba(31, 81, 186, 0.08);
+}
+
+/* Primary - Text */
+.btn-text.btn-primary {
+  background-color: transparent;
+  color: #1f51ba;
+}
+
+.btn-text.btn-primary:hover:not(:disabled) {
+  background-color: rgba(31, 81, 186, 0.08);
+}
+
+/* Secondary - Filled */
+.btn-filled.btn-secondary {
+  background-color: #0d9488;
+  color: #ffffff;
+  box-shadow: 0 2px 4px rgba(13, 148, 136, 0.2);
+}
+
+.btn-filled.btn-secondary:hover:not(:disabled) {
+  background-color: #0a7a6f;
+  box-shadow: 0 4px 8px rgba(13, 148, 136, 0.3);
+}
+
+/* Error - Filled */
+.btn-filled.btn-error {
+  background-color: #dc2626;
+  color: #ffffff;
+  box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2);
+}
+
+.btn-filled.btn-error:hover:not(:disabled) {
+  background-color: #b91c1c;
+  box-shadow: 0 4px 8px rgba(220, 38, 38, 0.3);
+}
+
+/* Error - Outlined */
+.btn-outlined.btn-error {
+  background-color: transparent;
+  color: #dc2626;
+  border: 2px solid #dc2626;
+}
+
+.btn-outlined.btn-error:hover:not(:disabled) {
+  background-color: rgba(220, 38, 38, 0.08);
+}
+
+/* Disabled state */
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Focus visible for accessibility */
+.btn:focus-visible {
+  outline: 3px solid #1f51ba;
+  outline-offset: 2px;
+}
+
+.btn-outlined:focus-visible {
+  outline-offset: 4px;
+}

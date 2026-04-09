@@ -1,126 +1,193 @@
-import React, { useState, useEffect } from 'react';
+/**
+ * App Component - Main application component
+ * Integrates all features: day navigation, task display, task form
+ */
+
+import React, { useEffect, useState } from 'react';
+import { TaskProvider, useTaskContext } from './context/TaskContext';
+import { useTasks } from './hooks/useTasks';
+import { DayNavigation } from './components/DayNavigation/DayNavigation';
+import { TaskList } from './components/TaskList/TaskList';
+import { TaskForm } from './components/TaskForm/TaskForm';
+import { Button } from './components/common/Button';
+import { getDateLabel, sortTasksByTime } from './utils/dateHelpers';
 import './App.css';
 
-function App() {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [newItem, setNewItem] = useState('');
+/**
+ * Inner App component that uses context
+ */
+function AppContent() {
+  const context = useTaskContext();
+  const taskOps = useTasks();
+  const [showForm, setShowForm] = useState(false);
+  const [editingTaskId, setEditingTaskId] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Load tasks when date changes
   useEffect(() => {
-    fetchData();
-  }, []);
+    taskOps.loadTasksForDate(context.currentDate);
+  }, [context.currentDate, taskOps]);
 
-  const fetchData = async () => {
+  // Update context when tasks change
+  useEffect(() => {
+    context.setTasks(taskOps.tasks);
+  }, [taskOps.tasks]);
+
+  // Handle task creation
+  const handleCreateTask = async (formData) => {
+    setIsSubmitting(true);
     try {
-      setLoading(true);
-      const response = await fetch('/api/items');
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      const result = await response.json();
-      setData(result);
-      setError(null);
+      const newTask = await taskOps.createTask(formData);
+      context.addTask(newTask);
+      setShowForm(false);
+      // Show success toast (optional enhancement in Phase 2)
     } catch (err) {
-      setError('Failed to fetch data: ' + err.message);
-      console.error('Error fetching data:', err);
+      context.setError(err.message);
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!newItem.trim()) return;
+  // Handle task update
+  const handleUpdateTask = async (formData) => {
+    if (!editingTaskId) return;
 
+    setIsSubmitting(true);
     try {
-      const response = await fetch('/api/items', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name: newItem }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to add item');
-      }
-
-      const result = await response.json();
-      setData([...data, result]);
-      setNewItem('');
+      const updatedTask = await taskOps.updateTask(editingTaskId, formData);
+      context.updateTaskInState(updatedTask);
+      setShowForm(false);
+      setEditingTaskId(null);
     } catch (err) {
-      setError('Error adding item: ' + err.message);
-      console.error('Error adding item:', err);
+      context.setError(err.message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleDelete = async (itemId) => {
+  // Handle form submit
+  const handleFormSubmit = (formData) => {
+    if (editingTaskId) {
+      handleUpdateTask(formData);
+    } else {
+      handleCreateTask(formData);
+    }
+  };
+
+  // Handle task edit
+  const handleEdit = (taskId) => {
+    setEditingTaskId(taskId);
+    setShowForm(true);
+  };
+
+  // Handle task status change
+  const handleStatusChange = async (taskId, newStatus) => {
     try {
-      const response = await fetch(`/api/items/${itemId}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete item');
-      }
-
-      setData(data.filter(item => item.id !== itemId));
-      setError(null);
+      const updated = await taskOps.updateTaskStatus(taskId, newStatus);
+      context.updateTaskInState(updated);
     } catch (err) {
-      setError('Error deleting item: ' + err.message);
-      console.error('Error deleting item:', err);
+      context.setError(err.message);
     }
   };
+
+  // Handle task delete
+  const handleDelete = async (taskId) => {
+    try {
+      await taskOps.deleteTask(taskId);
+      context.deleteTaskFromState(taskId);
+    } catch (err) {
+      context.setError(err.message);
+    }
+  };
+
+  const tasksForCurrentDate = context.getTasksForCurrentDate();
+  const sortedTasks = sortTasksByTime(tasksForCurrentDate);
+  const dateLabel = getDateLabel(context.currentDate);
+  const editingTask = editingTaskId &&
+    taskOps.tasks.find(t => t.id === editingTaskId);
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <h1>To Do App</h1>
-        <p>Keep track of your tasks</p>
+    <div className="app-container">
+      <header className="app-header">
+        <h1 className="app-title">📋 Daily Tasks</h1>
+        <p className="app-subtitle">Organize your day, one task at a time</p>
       </header>
 
-      <main>
-        <section className="add-item-section">
-          <h2>Add New Item</h2>
-          <form onSubmit={handleSubmit}>
-            <input
-              type="text"
-              value={newItem}
-              onChange={(e) => setNewItem(e.target.value)}
-              placeholder="Enter item name"
-            />
-            <button type="submit">Add Item</button>
-          </form>
-        </section>
+      <main className="app-main">
+        <div className="app-content">
+          {/* Day Navigation */}
+          <DayNavigation
+            currentDate={context.currentDate}
+            onDateChange={context.setCurrentDate}
+          />
 
-        <section className="items-section">
-          <h2>Items from Database</h2>
-          {loading && <p>Loading data...</p>}
-          {error && <p className="error">{error}</p>}
-          {!loading && !error && (
-            <ul>
-              {data.length > 0 ? (
-                data.map((item) => (
-                  <li key={item.id}>
-                    <span>{item.name}</span>
-                    <button 
-                      onClick={() => handleDelete(item.id)}
-                      className="delete-btn"
-                      type="button"
-                    >
-                      Delete
-                    </button>
-                  </li>
-                ))
-              ) : (
-                <p>No items found. Add some!</p>
-              )}
-            </ul>
+          {/* Task List */}
+          <TaskList
+            tasks={sortedTasks}
+            dateLabel={dateLabel}
+            isLoading={taskOps.isLoading}
+            error={taskOps.error}
+            onStatusChange={handleStatusChange}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onRetry={() => taskOps.loadTasksForDate(context.currentDate)}
+          />
+
+          {/* Add Task Button (FAB) */}
+          {!showForm && (
+            <button
+              className="fab-btn"
+              onClick={() => {
+                setEditingTaskId(null);
+                setShowForm(true);
+              }}
+              title="Add new task"
+              aria-label="Add new task"
+            >
+              +
+            </button>
           )}
-        </section>
+        </div>
+
+        {/* Task Form Modal */}
+        {showForm && (
+          <div className="form-modal">
+            <div className="form-modal-content">
+              <button
+                className="form-close-btn"
+                onClick={() => {
+                  setShowForm(false);
+                  setEditingTaskId(null);
+                }}
+                aria-label="Close form"
+              >
+                ×
+              </button>
+              <TaskForm
+                initialTask={editingTask}
+                onSubmit={handleFormSubmit}
+                onCancel={() => {
+                  setShowForm(false);
+                  setEditingTaskId(null);
+                }}
+                isSubmitting={isSubmitting}
+              />
+            </div>
+          </div>
+        )}
       </main>
     </div>
+  );
+}
+
+/**
+ * App Root - Wraps everything with TaskProvider
+ */
+function App() {
+  return (
+    <TaskProvider>
+      <AppContent />
+    </TaskProvider>
   );
 }
 
